@@ -140,8 +140,17 @@ function plotsyndata_constantD!(plt,syntheticdata, DPinputs, noise; color = :gre
         scatter!(plt,xaxis, yaxis, yerror = plotnoise, mc = colorpal[DNAind], label = "")
     end
 end
-function plotmodelprediction!(plt,model,params,DPinputs;npoints = 100, color = :blues,modelname="",normalizexaxis = true, normalizeyaxis = true, maximumT7 = nothing)
-    DNAs = unique(DPinputs[:,1])
+function plotmodelprediction!(plt,model,params, covariancematrix, p_base, DPinputs;
+    npoints = 100, 
+    color = :blues,
+    modelname="",
+    normalizexaxis = true, 
+    normalizeyaxis = true, 
+    maximumT7 = nothing, 
+    extraDNA = [], 
+    kwargs...)
+
+    DNAs = vcat(unique(DPinputs[:,1]), extraDNA)
     colorpal = palette(color, length(DNAs))
     if normalizexaxis
         if isnothing(maximumT7)
@@ -166,9 +175,9 @@ function plotmodelprediction!(plt,model,params,DPinputs;npoints = 100, color = :
     else
         ylabel = "Transcription Rate (mM NTP/ hr)"
     end
-    plot!(xlabel = xlabel, ylabel = ylabel)
+    plot!(plt, xlabel = xlabel, ylabel = ylabel)
     for (ind,D) in enumerate(DNAs)
-        plotQSrate_constantD!(plt, model, params, D, prange; modellabel = modelname*": DNA = "*string(round(D, digits = 1)), npoints = npoints, color = colorpal[ind],normalizexaxis = normalizexaxis,normalizeyaxis = normalizeyaxis)
+        plotQSrate_constantD!(plt, model, params, covariancematrix, p_base, D, prange; modellabel = modelname*": DNA = "*string(round(D, digits = 1)), npoints = npoints, color = colorpal[ind],normalizexaxis = normalizexaxis,normalizeyaxis = normalizeyaxis, kwargs...)
     end
     return plt
 end

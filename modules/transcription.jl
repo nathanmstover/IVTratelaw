@@ -13,12 +13,14 @@ using InvertedIndices
 using LaTeXStrings
 using CSV
 using DataFrames
+using StatsBase
 
 abstract type TranscriptionModel end
 include("./bulkmodels.jl")
 include("./continuummodels.jl")
 include("./modelselection.jl")
 include("./rootsbackend.jl")
+include("./modelbasedDOE.jl")
 
 
 #Defining Functions for Observables
@@ -96,9 +98,9 @@ function plotQSrate_constantP(model::TranscriptionModel, params, DNArange, P; kw
     return plt
 end
 
-function plotQSrate_constantD(model::TranscriptionModel, params, DNA, Prange; kwargs...)
+function plotQSrate_constantD(model::TranscriptionModel, paramsls, covariancematrix, DNA, Prange; kwargs...)
     plt = plot(xlabel = "T7 RNA Polymerase per DNA", ylabel = "Transcription Rate per (mM NTP/ hr) per nM DNA")
-    plt = plotQSrate_constantD!(plt, model, params, DNA, Prange; kwargs...)
+    plt = plotQSrate_constantD!(plt, model, paramsls, covariancematrix, DNA, Prange; kwargs...)
     return plt
 end
 
@@ -115,7 +117,19 @@ function plotQSrate_constantP!(plt, model::TranscriptionModel, params, DNArange,
     plot!(plt,DNApoints,QSrate,label = modellabel)
 end
 
-function plotQSrate_constantD!(plt, model::TranscriptionModel, params, DNA, prange; npoints = 20, modellabel = "", analytic=true, color = :auto, normalizexaxis = true, normalizeyaxis = true)
+function plotQSrate_constantD!(plt, model::TranscriptionModel, paramsls, covariancematrix, baseparams, DNA, prange; 
+    npoints = 20, 
+    modellabel = "", 
+    analytic=true, 
+    color = :auto, 
+    normalizexaxis = true, 
+    normalizeyaxis = true, 
+    showuncertainty = true, 
+    alph = 0.05, 
+    nmc = 10000)
+
+    params = generatefullparameters(model,paramsls,baseparams)
+    
     ppoints = LinRange(prange[1],prange[2],npoints)
     if normalizexaxis == true
         xscalingfactor = DNA
@@ -130,14 +144,33 @@ function plotQSrate_constantD!(plt, model::TranscriptionModel, params, DNA, pran
     end
 
     QSrate = zeros(npoints)
+    lower_pointwise_CB = zeros(npoints)
+    upper_pointwise_CB = zeros(npoints)
+
     for (ind,p) in enumerate(ppoints)
         if analytic
             QSrate[ind] = quasisteadyrate_analytic(model, params, DNA, xscalingfactor*p)
         else
             QSrate[ind] = dynamicquasisteadystate(model, params, DNA, xscalingfactor*p)
         end
+        if showuncertainty
+            mcensemble = zeros(nmc)
+            mean = paramsls
+            d = MvNormal(mean, Hermitian(covariancematrix))
+            for i in 1:nmc
+                x = rand(d, 1)
+                sampleparams = generatefullparameters(model,x,baseparams)
+                mcensemble[i] = quasisteadyrate_analytic(model, sampleparams, DNA, xscalingfactor*p)
+            end
+            lower_pointwise_CB[ind] = percentile(mcensemble,100*alph/2)
+            upper_pointwise_CB[ind] = percentile(mcensemble,100*(1-alph/2))
+        else
+            lower_pointwise_CB[ind] = 0
+            upper_pointwise_CB[ind] = 0
+        end
     end
     plot!(plt,ppoints,QSrate ./yscalingfactor,label = modellabel, linecolor = color)
+    plot!(plt,ppoints, lower_pointwise_CB ./yscalingfactor, fillrange = upper_pointwise_CB ./yscalingfactor, fillalpha = 0.35,alpha=0.0, color = color,linewidth = 0.0,label="",z_order = :back)
 end
 
 #Functions for generating expressions common to differential models
