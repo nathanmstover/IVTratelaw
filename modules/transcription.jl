@@ -11,6 +11,8 @@ using Distributions
 using Measures
 using InvertedIndices
 using LaTeXStrings
+using CSV
+using DataFrames
 
 abstract type TranscriptionModel end
 include("./bulkmodels.jl")
