@@ -184,7 +184,7 @@ end
 
 function generateplotsyntheticdata(model,params,DPinputs; noise = 0, kwargs...)
     plt = plot()
-    plotmodelprediction!(plt,model,params,DPinputs; color = :greens, kwargs...)
+    #plotmodelprediction!(plt,model,params,DPinputs,zeros(2,2), p_base; color = :greens, showuncertainty = false, kwargs...)
     syntheticdata = generatesyntheticdata(model,params,DPinputs,noise)
     plotsyndata_constantD!(plt,syntheticdata, DPinputs, noise; kwargs...)
     return (plt,syntheticdata,DPinputs)
