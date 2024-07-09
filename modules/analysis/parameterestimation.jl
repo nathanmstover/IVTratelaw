@@ -53,7 +53,7 @@ end
 
 function modelresidual(model,estimatedparams, syntheticdata, DPpoints, noise, baseparams)
     predicteddata = modelprediction(model,estimatedparams, DPpoints, baseparams)
-    norm((predicteddata .- syntheticdata) ./noise)
+    norm((predicteddata .- syntheticdata) ./noise)^2#Sum of weighted squares equivalent to negative log likelihood
 end
 
 function generatefullparameters(model::InitiationLimitedModel,estimatedparams,baseparams)

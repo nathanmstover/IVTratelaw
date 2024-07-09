@@ -4,29 +4,19 @@ function plotmodelprediction!(plt,model,params, covariancematrix, p_base, DPinpu
     modelname="",
     normalizexaxis = true, 
     normalizeyaxis = true, 
-    maximumT7 = nothing, 
+    maximumT7 = 800,
+    maximumrelativeT7 = 100, 
     extraDNA = [], 
     kwargs...)
 
     DNAs = vcat(unique(DPinputs[:,1]), extraDNA)
     colorpal = palette(color, length(DNAs))
     if normalizexaxis
-        if isnothing(maximumT7)
-            maxT7 = maximum(relativeT7input)
-        else
-            maxT7 = maximumT7
-        end
         xlabel = "T7 RNA Polymerase per DNA"
-        relativeT7input = DPinputs[:,2] ./DPinputs[:,1]
-        prange = (1e-5,maxT7)
+        prange = (1e-5,maximumrelativeT7)
     else
-        if isnothing(maximumT7)
-            maxT7 = maximum(DPinputs[:,2])
-        else
-            maxT7 = maximumT7
-        end
         xlabel = "T7 RNA Polymerase (nM)"
-        prange = (1e-5,maxT7)
+        prange = (1e-5,maximumT7)
     end
     if normalizeyaxis
         ylabel = "Transcription Rate (mM NTP/ hr) per nM DNA"
@@ -46,9 +36,9 @@ function plotQSrate_constantP(model::TranscriptionModel, params, DNArange, P; kw
     return plt
 end
 
-function plotQSrate_constantD(model::TranscriptionModel, paramsls, covariancematrix, DNA, Prange; kwargs...)
+function plotQSrate_constantD(model::TranscriptionModel, paramsls, covariancematrix, baseparams, DNA, Prange; kwargs...)
     plt = plot(xlabel = "T7 RNA Polymerase per DNA", ylabel = "Transcription Rate per (mM NTP/ hr) per nM DNA")
-    plt = plotQSrate_constantD!(plt, model, paramsls, covariancematrix, DNA, Prange; kwargs...)
+    plt = plotQSrate_constantD!(plt, model, paramsls, covariancematrix, baseparams, DNA, Prange; kwargs...)
     return plt
 end
 
@@ -56,7 +46,7 @@ function plotQSrate_constantP!(plt, model::TranscriptionModel, params, DNArange,
     npoints = 20, 
     modellabel = "", 
     analytic=true)
-    
+
     DNApoints = LinRange(DNArange[1],DNArange[2],npoints)
     QSrate = zeros(npoints)
     for (ind,DNA) in enumerate(DNApoints)
@@ -77,10 +67,15 @@ function plotQSrate_constantD!(plt, model::TranscriptionModel, paramsls, covaria
     normalizexaxis = true, 
     normalizeyaxis = true, 
     showuncertainty = true, 
+    thinparameters = true,
     alph = 0.05, 
     nmc = 10000)
 
-    params = generatefullparameters(model,paramsls,baseparams)
+    if thinparameters
+        params = generatefullparameters(model,paramsls,baseparams)
+    else
+        params = paramsls
+    end
     
     ppoints = LinRange(prange[1],prange[2],npoints)
     if normalizexaxis == true

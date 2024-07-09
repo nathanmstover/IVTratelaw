@@ -55,9 +55,8 @@ function Doptimalitywrapper(model,estimatedparams, DPpointsflattened, baseparams
 end
 
 function getDoptimalitymeasure(model,estimatedparams, DPpointsflattened, baseparams, noise; 
-    priormatrix = zeros(length(estimatedparams),
-    length(estimatedparams)))
-    
+    priormatrix = zeros(length(estimatedparams),length(estimatedparams)))
+
     nexperiments = Int(length(DPpointsflattened)/2)
     DPpoints = reshape(DPpointsflattened,(nexperiments,2))
     noisevals = [noise(DPpoints[exptind,1],DPpoints[exptind,2],estimatedparams,baseparams) for exptind in 1:nexperiments]
