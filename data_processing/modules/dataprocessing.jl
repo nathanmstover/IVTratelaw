@@ -6,7 +6,7 @@ Import excel file with data from experiments with various conditions
 """
 function importlabdata(filename::String)
     # load excel file into DataFrame
-    raw_data = XLSX.readtable(filename, "Sheet1") |> DataFrame
+    raw_data = CSV.File(filename) |> DataFrame
     raw_data_matrix = Matrix(raw_data)
     
     raw_data_matrix = map(x -> tryparse(Float64, string(x)) !== nothing ? parse(Float64, string(x)) : NaN, raw_data_matrix)
@@ -46,7 +46,7 @@ It sorts it in the order such that it is used in the TASEP code
 
 function copydata(filename::String)
     # load excel file into DataFrame
-    excel_data = XLSX.readtable(filename, "Sheet1") |> DataFrame
+    excel_data = CSV.File(filename) |> DataFrame
     excel_data_matrix = Matrix(excel_data)
     
     # convert each element to a Float64, else assign NaN

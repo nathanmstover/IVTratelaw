@@ -7,6 +7,7 @@ using ColorSchemes
 using Statistics
 using LinearAlgebra
 using Dates
+Pkg.add("CSV")
 
 include("dataprocessing.jl")
 include("output_for_TASEP.jl")

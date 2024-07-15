@@ -147,8 +147,8 @@ function rate_for_TASEP(data::String, sigma::Float64)
         updated_matrix = hcat(existing_matrix, new_column_matrix)
     end
 
-# Filter out rows where rate is negative or greater than 2
-filtered_matrix = updated_matrix[(updated_matrix[:, 4] .>= 0) .& (updated_matrix[:, 4] .<= 20), :]
+# Filter out rows where rate is negative
+filtered_matrix = updated_matrix[(updated_matrix[:, 4] .>= 0), :]
 
 ###sorted and ready to input into TASEP
 # Delete the first column
