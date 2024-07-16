@@ -44,7 +44,7 @@ plot the raw data + estimated slope + confidence interval for all replicates wit
 
 """
 
-function plot_all_replicates(condition_n, datafileivt::String, sigma)
+function plot_all_replicates(condition_n, datafileivt::String; sigma = 0.27)
 
     filtered_data = importlabdata(datafileivt)
 
@@ -103,7 +103,7 @@ plot the raw data + estimated slope + confidence interval for all conditions and
 """
 
 
-function plot_all_replicates_all_conditions(datafileivt::String, sigma)
+function plot_all_replicates_all_conditions(datafileivt::String; sigma = 0.27)
 
     filtered_data = importlabdata(datafileivt)
     
@@ -166,7 +166,7 @@ create bar plot of the rate and standard deviation for all replicates at specifi
 
 
 
-function bar_rates_all_repl(condition_n, datafileivt::String, sigma)
+function bar_rates_all_repl(condition_n, datafileivt::String; sigma = 0.27)
 
     filtered_data = importlabdata(datafileivt)
 
@@ -219,7 +219,7 @@ create bar plot of the rate and standard deviation for all conditions and replic
 """
 
 
-function bar_rates_all_repl_all_cond(datafileivt::String, sigma)
+function bar_rates_all_repl_all_cond(datafileivt::String; sigma = 0.27)
 
     filtered_data = importlabdata(datafileivt)
        
