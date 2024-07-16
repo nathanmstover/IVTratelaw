@@ -48,3 +48,22 @@ function plotsyndata_constantD!(plt,syntheticdata, DPinputs, noise;
         scatter!(plt,xaxis, yaxis, yerror = plotnoise, mc = colorpal[DNAind], label = "")
     end
 end
+
+function plotonboxconstraints(DPinputs;  
+    upperDNA = 28.5, #nM
+    lowerDNA = 1.0, #nM
+    upperP = 384.0, #nM
+    lowerP = 40.0, #nM
+    DNAconcentration = 504,#stock solution nM
+    T7concentration = 3200,#stock solution nM
+    maxvolumeratio = 0.28)#fraction of vial
+        
+    maxvolumefunction = (DNAadded) -> T7concentration*(maxvolumeratio - DNAadded/DNAconcentration)
+    DNArange = LinRange(lowerDNA,upperDNA,100)
+    scatter(DPinputs[:,1],DPinputs[:,2], label = "", xlabel = "Added DNA (nM)", ylabel = "Added RNA polymerase (nM)", legend = :outertop, size = (500,500))
+    vline!([lowerDNA,upperDNA], label = "DNA box constraints")
+    hline!([lowerP,upperP], label = "RNA Polymerase box constraints")
+    plot!(DNArange,[maxvolumefunction(x) for x in DNArange], label = "Maximum volume constraint")
+    plot!(DNArange,lowerP*ones(length(DNArange)), fillrange = [max(lowerP,min(maxvolumefunction(x),upperP)) for x in DNArange], fillalpha = 0.35,alpha=0.0,linewidth = 0.0,label="Feasible Region",z_order = :back)
+
+end
