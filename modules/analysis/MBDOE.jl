@@ -1,20 +1,10 @@
-function multistartMBDOEoptimization(model, params, initDPpoints, baseparams;
-    upperDNA = 28.5, 
-    lowerDNA = 1.0, 
-    upperP = 384.0, 
-    lowerP = 40.0, 
+function multistartMBDOEoptimization(model, params, baseparams, nexperiments;
     npoints = 1000,
     kwargs...)
-
-    nvariables = Int(length(initDPpoints)/2)
-
-    lowerbounds = vcat(ones(nvariables)*lowerDNA,ones(nvariables)*lowerP)
-    upperbounds = vcat(ones(nvariables)*upperDNA,ones(nvariables)*upperP)
-    (minf,minx,ret) = localMBDOEoptimization(model, params, initDPpoints, baseparams; upperDNA = upperDNA, lowerDNA = lowerDNA, upperP = upperP, lowerP = lowerP, kwargs...)
-
+    (minf,minx,ret) = [Inf,0,0]
     for i in 1:npoints
-        iterguess = [rand(Uniform(lowerbounds[j],upperbounds[j])) for j in 1:2*nvariables]
-        (newminf,newminx,newret) = localMBDOEoptimization(model, params, iterguess, baseparams; upperDNA = upperDNA, lowerDNA = lowerDNA, upperP = upperP, lowerP = lowerP, kwargs...)
+        iterguess = reshape(choosefeasiblepoint(nexperiments;kwargs...),2*nexperiments)
+        (newminf,newminx,newret) = localMBDOEoptimization(model, params, iterguess, baseparams; kwargs...)
         if !isnan(newminf) && newminf<minf
             (minf,minx,ret) = (newminf,newminx,newret)
         end
@@ -23,23 +13,64 @@ function multistartMBDOEoptimization(model, params, initDPpoints, baseparams;
     return (minf,minx,ret)
 end
 
+function choosefeasiblepoint(nexperiments;    
+    upperDNA = 28.5, #nM
+    lowerDNA = 1.0, #nM
+    upperP = 384.0, #nM
+    lowerP = 40.0, #nM
+    DNAconcentration = 504,#stock solution nM
+    T7concentration = 3200,#stock solution nM
+    maxvolumeratio = 0.28,
+    priormatrix = 0)#fraction of vial)
+
+    pointls = []
+    pointsaddedcounter = 0
+    while pointsaddedcounter<nexperiments
+        DNAadded = rand(Uniform(lowerDNA,upperDNA))
+        T7added = rand(Uniform(lowerP,upperP))
+        if DNAadded/DNAconcentration + T7added/T7concentration < maxvolumeratio
+            append!(pointls,[[DNAadded,T7added]])
+            pointsaddedcounter+=1
+        end
+    end
+    return hcat(pointls...)'
+end
+
 function localMBDOEoptimization(model, params, initDPpoints, baseparams; 
     noise = (T7,DNA,param,base_params)-> 1.0, 
-    upperDNA = 28.5, 
-    lowerDNA = 1.0, 
-    upperP = 384.0, 
-    lowerP = 40.0, 
+    upperDNA = 28.5, #nM
+    lowerDNA = 1.0, #nM
+    upperP = 384.0, #nM
+    lowerP = 40.0, #nM
+    DNAconcentration = 504,#stock solution nM
+    T7concentration = 3200,#stock solution nM
+    maxvolumeratio = 0.28,#fraction of vial
     priormatrix = zeros(length(params),length(params)))
 
     nvariables = Int(length(initDPpoints)/2)
     opt = Opt(:LD_SLSQP, nvariables*2)
     opt.lower_bounds = vcat(ones(nvariables)*lowerDNA,ones(nvariables)*lowerP)
     opt.upper_bounds = vcat(ones(nvariables)*upperDNA,ones(nvariables)*upperP)
-    opt.ftol_rel = 1e-10
+    opt.ftol_rel = 1e-4
     opt.maxtime = 1#seconds
+    inequality_constraint!(opt, (res,x,g) -> maxvolumeconstraint(res,x,g,DNAconcentration,T7concentration,maxvolumeratio), 1e-3*ones(nvariables))
     opt.min_objective = (x,g) -> Doptimalitywrapper(model, params, x, baseparams, noise, g, priormatrix = priormatrix)
-        (minf,minx,ret) = optimize(opt, initDPpoints)
+    (minf,minx,ret) = optimize(opt, initDPpoints)
     return (minf,minx,ret)
+end
+
+function maxvolumeconstraint(result::Vector, x::Vector, grad::Matrix, DNAconc, T7conc, maxvolumeratio)#DNAconc and T7conc in nM, maxvolume in uL
+    if length(grad) > 0
+        for i in 1:Int(length(x)/2)
+            grad[1,i] = 1/DNAconc
+            grad[2,i] = 1/T7conc
+        end
+    end
+    for i in 1:Int(length(x)/2)
+        DNAadded = x[i]#nM
+        T7added = x[i+Int(length(x)/2)]#nM
+        result[i] = DNAadded/DNAconc + T7added/T7conc - maxvolumeratio
+    end
 end
 
 function Doptimalitywrapper(model,estimatedparams, DPpointsflattened, baseparams, noise, grad; kwargs...)
