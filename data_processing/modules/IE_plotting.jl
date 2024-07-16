@@ -75,7 +75,7 @@ function plot_all_replicates(condition_n, datafileivt::String; sigma = 0.27)
          x_data = df_repl[!, :time]
          y_data = df_repl[!, :ATP]
 
-         scatter!(p, x_data, y_data, yerror = variance, subplot = i)
+         scatter!(p, x_data, y_data, yerror = sigma, subplot = i)
 
          y_pred = [slope*t + intersect for t in x_data]
 
@@ -131,7 +131,7 @@ function plot_all_replicates_all_conditions(datafileivt::String; sigma = 0.27)
 
             subplot_index = (j, i)  
 
-            p = scatter(x_data, y_data, yerror = variance)
+            p = scatter(x_data, y_data, yerror = sigma)
 
             y_pred = [slope*t + intersect for t in x_data]
 
