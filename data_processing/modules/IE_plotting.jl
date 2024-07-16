@@ -5,7 +5,9 @@ plot the raw data + estimated slope + confidence interval for a specific conditi
 
 """
 
-function plot_for_repl_cond(condition_n, replicate_n, filtered_data, sigma)
+function plot_for_repl_cond(condition_n, replicate_n, datafileivt::String, sigma)
+
+    filtered_data = importlabdata(datafileivt)
 
     #filter out data for specific condition and replicate number
     filtered_data_cond_repl = filter(row -> row[:condition] == condition_n && row[:replicate] == replicate_n, filtered_data)
@@ -42,7 +44,10 @@ plot the raw data + estimated slope + confidence interval for all replicates wit
 
 """
 
-function plot_all_replicates(condition_n, filtered_data, sigma)
+function plot_all_replicates(condition_n, datafileivt::String, sigma)
+
+    filtered_data = importlabdata(datafileivt)
+
     #filter out data for specific condition and replicate number
     filtered_data_cond = filter(row -> row[:condition] == condition_n, filtered_data)
 
@@ -82,7 +87,7 @@ function plot_all_replicates(condition_n, filtered_data, sigma)
          
          xlabel!("Time", subplot = i)
          ylabel!("NTP Concentration", subplot = i)
-         ylims!(p, 1, 6)
+         #ylims!(p, 1, 6)
  
      end
      return p
@@ -98,7 +103,9 @@ plot the raw data + estimated slope + confidence interval for all conditions and
 """
 
 
-function plot_all_replicates_all_conditions(filtered_data, sigma)
+function plot_all_replicates_all_conditions(datafileivt::String, sigma)
+
+    filtered_data = importlabdata(datafileivt)
     
     filtered_data_cond = groupby(filtered_data, :condition)
 
@@ -136,7 +143,7 @@ function plot_all_replicates_all_conditions(filtered_data, sigma)
         
             xlabel!("Time")
             ylabel!("NTP Concentration")
-            ylims!(2,5.5)
+            #ylims!(2,5.5)
 
             push!(plot_list,p)
         end
@@ -159,7 +166,10 @@ create bar plot of the rate and standard deviation for all replicates at specifi
 
 
 
-function bar_rates_all_repl(condition_n, filtered_data, sigma)
+function bar_rates_all_repl(condition_n, datafileivt::String, sigma)
+
+    filtered_data = importlabdata(datafileivt)
+
     #filter out data for specific condition and replicate number
     filtered_data_cond = filter(row -> row[:condition] == condition_n, filtered_data)
 
@@ -209,7 +219,9 @@ create bar plot of the rate and standard deviation for all conditions and replic
 """
 
 
-function bar_rates_all_repl_all_cond(filtered_data, sigma)
+function bar_rates_all_repl_all_cond(datafileivt::String, sigma)
+
+    filtered_data = importlabdata(datafileivt)
        
     filtered_data_cond = groupby(filtered_data, :condition)
 
