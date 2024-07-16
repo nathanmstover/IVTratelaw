@@ -193,7 +193,7 @@ function bar_rates_all_repl(condition_n, filtered_data, sigma)
     filtered_st_dev = st_dev[non_zero_indices]
 
     # Plot with filtered data
-    bar(filtered_replicate_n, filtered_slopes, yerror=filtered_st_dev, label="Slopes",
+    scatter(filtered_replicate_n, filtered_slopes, yerror=filtered_st_dev, label="Slopes",
         xlabel="Replicate", ylabel="Slope", title="Bar Plot of Slopes")
 end
 
