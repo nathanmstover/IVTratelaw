@@ -5,10 +5,10 @@ Calculates the reaction rate for the provided experimental data per condition an
 
 """
 
-function rate_estimation(data::DataFrame, sigma::Float64)
+function rate_estimation(data::DataFrame, sigma::Float64; ATPscalingfactor = 4)
     #data should include column with replicate number, time [hr], and preferred (ATP) concentration [M], including headers
     #sigma is the standard deviation for all observations in the given data set
-
+   
     #separate data into df per replicate
     df_byrepl = groupby(data, :replicate)
  
@@ -29,8 +29,8 @@ function rate_estimation(data::DataFrame, sigma::Float64)
         rate_all_repl[j] = rate_error_intersect[1] #store the calculated rate
     end
 
-    mean_rate = -mean(rate_all_repl.*4)
-    variance_rate = var(rate_all_repl.*4)
+    mean_rate = -mean(rate_all_repl.*ATPscalingfactor)
+    variance_rate = var(rate_all_repl.*ATPscalingfactor)
 
     std_deviation = sqrt(variance_rate)
 
@@ -94,7 +94,7 @@ estimate the rate for the entire data set and combines it with the pDNA and T7 c
 
 
 
-function rate_for_TASEP(data::String, sigma::Float64)
+function rate_for_TASEP(data::String, sigma::Float64; kwargs...)
 
     #prepare matrix with the right order of pDNA & T7 concentration 
     CDT_matrix = copydata(data)
@@ -120,7 +120,7 @@ function rate_for_TASEP(data::String, sigma::Float64)
         # create dataframe w heading
         data_cond = DataFrame(replicate = replicate_cond, time = time_cond, ATP = NTP_cond)
 
-        mean_rate, std_deviation = rate_estimation(data_cond, sigma)
+        mean_rate, std_deviation = rate_estimation(data_cond, sigma; kwargs...)
         # find the condition specific rate and variance
 
         # Store rate and uncertainty in a single matrix
