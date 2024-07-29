@@ -14,6 +14,7 @@ function multistartMBDOEoptimization(model, params, baseparams, nexperiments;
 end
 
 function choosefeasiblepoint(nexperiments;    
+    noise = (T7,DNA,param,base_params)-> 1.0, 
     upperDNA = 28.5, #nM
     lowerDNA = 1.0, #nM
     upperP = 384.0, #nM
@@ -95,3 +96,12 @@ function getDoptimalitymeasure(model,estimatedparams, DPpointsflattened, basepar
     return det(inv(M))
 end
 
+function relativenoise(DNA,T7,param,base_params,model,eta)
+    DP = [DNA,T7]'
+    eta*modelprediction(model,param, DP, base_params)[1]
+end
+function exponentialnoise(DNA,T7,param,base_params,model,yotta)
+    DP = [DNA,T7]'
+    exp(yotta * modelprediction(model,param, DP, base_params)[1])
+end
+constantnoise = (DNA,T7,param,base_params)-> 1.0
