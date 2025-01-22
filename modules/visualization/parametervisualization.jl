@@ -11,23 +11,24 @@ function plotparametricellipseprojection(parameters,parametercovariance;α = 0.0
     return plt
 end
 
-function plotparametricellipse(parameters,parametercovariance; title = "", α = 0.05,labels = [L"k_i (h)","α","γ"])
-    if length(parameters) ==1
+function plotparametricellipse(parameters,parametercovariance; title = "", α = 0.05,labels = [L"k_i (h)",L"K_{MD} (nM)","α","β","γ"])
+    nparams = length(parameters)
+    if nparams == 1
         relativeuncertainty = 100*sqrt(parametercovariance[1])/parameters[1]
         println("Initiation Limited Model: "*string(round(relativeuncertainty,digits = 2))*" percent relative uncertainty")
-    elseif length(parameters) == 2
-        plt = plotparametricellipseprojection(parameters,parametercovariance;α = α,labels = labels[1:2])
-        plot!(title = title, size = (300,300))
-        return plt
-    elseif length(parameters) == 3
+    elseif nparams > 1
         plots = []
-        for i in 1:3
-            p_reduced = parameters[Not([i])]
-            cov_reduced = parametercovariance[Not([i]),Not([i])]
-            labels_reducted = labels[Not([i])]
+        plotpairs = multiset_combinations(1:nparams,2)
+        for pair in plotpairs
+            p_reduced = parameters[pair]
+            cov_reduced = parametercovariance[pair,pair]
+            labels_reducted = labels[pair]
             plot_reduced = plotparametricellipseprojection(p_reduced,cov_reduced;α = α,labels = labels_reducted)
             plots = vcat(plots,plot_reduced)
         end
-        return plot(plots...,layout = (1,3), size = (900,300),bottommargin = 5mm,leftmargin = 5mm,plot_title = title)
+        nplots = length(plots)
+        ncol = min(nplots,3)
+        nrow = Int(ceil(nplots/3))
+        return plot(plots...,layout = (nrow,ncol), size = (300*ncol,300*nrow), bottommargin = 5mm,leftmargin = 5mm,plot_title = title)
     end
 end

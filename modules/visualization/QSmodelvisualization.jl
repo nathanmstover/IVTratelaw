@@ -25,7 +25,7 @@ function plotmodelprediction!(plt,model,params, covariancematrix, p_base, DPinpu
     end
     plot!(plt, xlabel = xlabel, ylabel = ylabel)
     for (ind,D) in enumerate(DNAs)
-        plotQSrate_constantD!(plt, model, params, covariancematrix, p_base, D, prange; modellabel = modelname*": DNA = "*string(round(D, digits = 1)), npoints = npoints, color = colorpal[ind],normalizexaxis = normalizexaxis,normalizeyaxis = normalizeyaxis, kwargs...)
+        plotQSrate_constantD!(plt, model, params, covariancematrix, p_base, D, prange; modellabel = "DNA = "*string(round(D, digits = 1))*" nM", npoints = npoints, color = colorpal[ind],normalizexaxis = normalizexaxis,normalizeyaxis = normalizeyaxis, kwargs...)
     end
     return plt
 end

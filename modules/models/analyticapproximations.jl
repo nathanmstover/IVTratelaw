@@ -13,13 +13,16 @@ end
 #Takes same arguments as runtranscriptionmodel, returns quasisteady rate of RNA production
 function quasisteadyrate_analytic(model::TranscriptionModel, params::AbstractArray{T1}, DNA, P) where {T1<:Number}
     (α, β, θ, γ) = (1, 0, 0, 0)
-    K = (params.k_i+params.k_off)/params.k_on
+    #K = (params.k_i+params.k_off)/params.k_on
+    K = max(params.K,1e-9)
     if typeof(model)<:Union{InitiationElongationModel, ContinuumModel}
         α = params.α
     end
     if typeof(model)<:ContinuumModel
-        β = (α-1)*params.k_i*params.L/(params.k_on*params.N_all)
-        θ = params.k_off/params.k_on
+        β = params.β
+        θ = params.θ
+        # β = (α-1)*params.k_i*params.L/(params.k_on*params.N_all)
+        # θ = params.k_off/params.k_on
     end
     if typeof(model)<:LPTASEPModel
         γ = params.γ

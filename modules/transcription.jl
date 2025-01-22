@@ -14,7 +14,7 @@ using LaTeXStrings
 using CSV
 using DataFrames
 using StatsBase
-
+using Combinatorics
 
 include("models/models.jl")
 include("analysis/analysis.jl")
