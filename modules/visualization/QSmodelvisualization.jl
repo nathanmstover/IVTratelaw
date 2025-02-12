@@ -1,5 +1,5 @@
 function plotmodelprediction!(plt,model,params, covariancematrix, p_base, DPinputs;
-    npoints = 100, 
+    npoints = 35, 
     color = :blues,
     modelname="",
     normalizexaxis = true, 
@@ -9,7 +9,7 @@ function plotmodelprediction!(plt,model,params, covariancematrix, p_base, DPinpu
     extraDNA = [], 
     kwargs...)
 
-    DNAs = vcat(unique(DPinputs[:,1]), extraDNA)
+    DNAs = reverse(vcat(unique(DPinputs[:,1]), extraDNA))
     colorpal = palette(color, length(DNAs))
     if normalizexaxis
         xlabel = "T7 RNA Polymerase per DNA"
@@ -23,7 +23,7 @@ function plotmodelprediction!(plt,model,params, covariancematrix, p_base, DPinpu
     else
         ylabel = "Transcription Rate (mM NTP/ hr)"
     end
-    plot!(plt, xlabel = xlabel, ylabel = ylabel)
+    plot!(plt, xlabel = xlabel, ylabel = ylabel, legendfontsize=9)
     for (ind,D) in enumerate(DNAs)
         plotQSrate_constantD!(plt, model, params, covariancematrix, p_base, D, prange; modellabel = "DNA = "*string(round(D, digits = 1))*" nM", npoints = npoints, color = colorpal[ind],normalizexaxis = normalizexaxis,normalizeyaxis = normalizeyaxis, kwargs...)
     end
@@ -116,6 +116,6 @@ function plotQSrate_constantD!(plt, model::TranscriptionModel, paramsls, covaria
             upper_pointwise_CB[ind] = 0
         end
     end
-    plot!(plt,ppoints,QSrate ./yscalingfactor,label = modellabel, linecolor = color)
+    plot!(plt,ppoints,QSrate ./yscalingfactor,label = modellabel, linecolor = color,linewidth = 1.5)
     plot!(plt,ppoints, lower_pointwise_CB ./yscalingfactor, fillrange = upper_pointwise_CB ./yscalingfactor, fillalpha = 0.35,alpha=0.0, color = color,linewidth = 0.0,label="",z_order = :back)
 end

@@ -34,3 +34,15 @@ function densitydistributionfinal!(plt, model::ContinuumModel, params, DNA, P; p
     plot!(sol[end][4:end-2] ./DNA, ylims = (0,1.1), label = plotlabel,linewidth = 2)
     return plt
 end
+
+"""
+    relative(f, r; sp)
+
+Generate relative coordinates for plotting.""" 
+function relative(f, r; sp)
+    p = plot!()
+    lims = f(p[sp])
+    return lims[1] + r * (lims[2]-lims[1])
+end
+relativex(r; sp::Int=1) = relative(Plots.xlims, r; sp=sp)
+relativey(r; sp::Int=1) = relative(Plots.ylims, r; sp=sp)
